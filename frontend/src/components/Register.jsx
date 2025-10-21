@@ -22,8 +22,7 @@ const Register = () => {
             const response = await axios.post('http://localhost:3001/register', {
                 rollNo,
                 name,
-                password,
-                confirmPassword
+                password
             });
 
             if (response.data && response.data.message === "Registration successful") {
@@ -42,8 +41,9 @@ const Register = () => {
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center text-center vh-100" style={{backgroundImage: "linear-gradient(#00d5ff,#0095ff,rgba(93,0,255,.555))"}}>
-            <div className="bg-white p-4 rounded" style={{width: '40%'}}>
+        <div className="d-flex justify-content-center align-items-center text-center vh-100" 
+             style={{ backgroundImage: "linear-gradient(#00d5ff,#0095ff,rgba(93,0,255,.555))" }}>
+            <div className="bg-white p-4 rounded" style={{ width: '40%' }}>
                 <h2 className='mb-3 text-primary'>Register</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 text-start">
