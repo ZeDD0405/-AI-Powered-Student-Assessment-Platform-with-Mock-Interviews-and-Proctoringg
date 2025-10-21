@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const FormDataSchema = new mongoose.Schema({
-    rollNo: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
+    rollNo: { type: String, required: true, unique: true, trim: true },
+    name: { type: String, required: true, trim: true },
     password: { type: String, required: true }
-});
+}, { timestamps: true }); // Adds createdAt and updatedAt
 
 // Hash password before saving
 FormDataSchema.pre('save', async function(next) {
@@ -21,7 +21,11 @@ FormDataSchema.pre('save', async function(next) {
 
 // Method to compare password during login
 FormDataSchema.methods.comparePassword = async function(candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+    try {
+        return await bcrypt.compare(candidatePassword, this.password);
+    } catch (err) {
+        throw new Error("Error comparing passwords");
+    }
 };
 
 const FormDataModel = mongoose.model('log_reg_form', FormDataSchema);

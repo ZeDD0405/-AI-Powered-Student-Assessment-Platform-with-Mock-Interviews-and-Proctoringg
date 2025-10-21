@@ -8,93 +8,139 @@ const Register = () => {
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
 
         if (password !== confirmPassword) {
-            alert("Passwords do not match!");
+            setError("Passwords do not match!");
             return;
         }
+
+        setLoading(true);
 
         try {
             const response = await axios.post('http://localhost:3001/register', {
                 rollNo,
                 name,
-                password
+                password,
+                confirmPassword
             });
 
-            if (response.data && response.data.message === "Registration successful") {
+            if (response.data.message === "Registration successful") {
                 alert("Registered successfully! Please login.");
                 navigate('/login');
-            } else {
-                alert(response.data.error || response.data);
             }
         } catch (err) {
-            if (err.response && err.response.data) {
-                alert(err.response.data.error || err.response.data);
+            if (err.response && err.response.data && err.response.data.error) {
+                setError(err.response.data.error);
             } else {
-                alert("Something went wrong. Try again.");
+                setError("Something went wrong. Try again.");
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="d-flex justify-content-center align-items-center text-center vh-100" 
-             style={{ backgroundImage: "linear-gradient(#00d5ff,#0095ff,rgba(93,0,255,.555))" }}>
-            <div className="bg-white p-4 rounded" style={{ width: '40%' }}>
-                <h2 className='mb-3 text-primary'>Register</h2>
+        <div 
+            className="d-flex justify-content-center align-items-center text-center vh-100" 
+            style={{
+                background: "linear-gradient(135deg, #00d5ff, #0095ff, rgba(93,0,255,.555))",
+                fontFamily: "'Poppins', sans-serif"
+            }}
+        >
+            <div 
+                className="p-5 rounded shadow-lg" 
+                style={{ 
+                    width: '400px', 
+                    background: "rgba(255,255,255,0.95)", 
+                    transition: "transform 0.3s, box-shadow 0.3s" 
+                }}
+            >
+                <h2 className='mb-4 text-primary fw-bold'>Register</h2>
+
+                {error && <div className="alert alert-danger">{error}</div>}
+
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 text-start">
-                        <label className="form-label"><strong>Roll No</strong></label>
+                        <label className="form-label fw-semibold">Roll No</label>
                         <input
                             type="text"
                             placeholder="Enter Roll No"
-                            className="form-control"
+                            className="form-control shadow-sm"
                             value={rollNo}
                             onChange={(e) => setRollNo(e.target.value)}
                             required
                         />
                     </div>
                     <div className="mb-3 text-start">
-                        <label className="form-label"><strong>Name</strong></label>
+                        <label className="form-label fw-semibold">Name</label>
                         <input
                             type="text"
                             placeholder="Enter Name"
-                            className="form-control"
+                            className="form-control shadow-sm"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             required
                         />
                     </div>
                     <div className="mb-3 text-start">
-                        <label className="form-label"><strong>Password</strong></label>
+                        <label className="form-label fw-semibold">Password</label>
                         <input
                             type="password"
                             placeholder="Enter Password"
-                            className="form-control"
+                            className="form-control shadow-sm"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
                     <div className="mb-3 text-start">
-                        <label className="form-label"><strong>Confirm Password</strong></label>
+                        <label className="form-label fw-semibold">Confirm Password</label>
                         <input
                             type="password"
                             placeholder="Confirm Password"
-                            className="form-control"
+                            className="form-control shadow-sm"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                         />
                     </div>
-                    <button type="submit" className="btn btn-primary w-100">Register</button>
+
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary w-100 fw-bold"
+                        disabled={loading}
+                        style={{ transition: "all 0.3s" }}
+                        onMouseOver={e => {
+                            e.target.style.transform = "scale(1.05)";
+                            e.target.style.boxShadow = "0 5px 15px rgba(0,0,0,0.3)";
+                        }}
+                        onMouseOut={e => {
+                            e.target.style.transform = "scale(1)";
+                            e.target.style.boxShadow = "none";
+                        }}
+                    >
+                        {loading ? "Registering..." : "Register"}
+                    </button>
                 </form>
 
                 <p className='my-3'>Already have an account?</p>
-                <Link to='/login' className="btn btn-secondary w-100">Login</Link>
+                <Link 
+                    to='/login' 
+                    className="btn btn-outline-secondary w-100 fw-semibold"
+                    style={{ transition: "all 0.3s" }}
+                    onMouseOver={e => e.target.style.transform = "scale(1.05)"}
+                    onMouseOut={e => e.target.style.transform = "scale(1)"}
+                >
+                    Login
+                </Link>
             </div>
         </div>
     );
