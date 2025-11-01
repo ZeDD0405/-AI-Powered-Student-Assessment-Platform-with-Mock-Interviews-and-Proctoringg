@@ -75,3 +75,4 @@ tmp/
 temp/
 *.bak
 *.tmp
+"backend/node_modules/" 

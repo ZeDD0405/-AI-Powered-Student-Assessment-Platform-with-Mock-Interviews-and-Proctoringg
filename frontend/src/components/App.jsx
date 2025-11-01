@@ -5,6 +5,8 @@ import Login from "./Login";
 import Register from "./Register";
 import MockInterviewDashboard from "./MockInterviewDashboard";
 import StartTestDashboard from "./StartTestDashboard";
+import StartMockInterview from "./StartMockInterview";
+import MockSession from "./MockSession"; // ✅ newly added import
 
 function App() {
   return (
@@ -12,11 +14,19 @@ function App() {
       <Routes>
         {/* Redirect root to /register */}
         <Route path="/" element={<Navigate to="/register" />} />
+
+        {/* Auth Pages */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+
+        {/* Student Dashboard */}
         <Route path="/home" element={<Home />} />
         <Route path="/mock-interview" element={<MockInterviewDashboard />} />
         <Route path="/start-test" element={<StartTestDashboard />} />
+
+        {/* ✅ New Mock Interview Routes */}
+        <Route path="/start-mock-interview" element={<StartMockInterview />} />
+        <Route path="/mock-session" element={<MockSession />} />
       </Routes>
     </BrowserRouter>
   );
