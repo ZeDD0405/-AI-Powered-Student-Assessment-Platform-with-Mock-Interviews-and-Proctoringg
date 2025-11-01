@@ -27,8 +27,8 @@ mongoose
   .catch((err) => console.log("❌ MongoDB connection error:", err));
 
 // ---------------- Modular Routes ----------------
-app.use("/api/auth", authRoutes);      // ✅ Handles register/login
-app.use("/api/interview", interviewRoutes); // ✅ Gemini interview routes
+app.use("/api/auth", authRoutes);
+app.use("/api/interview", interviewRoutes);
 
 // ---------------- Default Route ----------------
 app.get("/", (req, res) => {

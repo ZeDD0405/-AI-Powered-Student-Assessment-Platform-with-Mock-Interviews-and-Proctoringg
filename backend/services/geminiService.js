@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
+  "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
 
 async function generateInterviewQuestions(role, experience, company) {
   try {
@@ -34,7 +34,6 @@ Ask only ONE question — relevant, realistic, and interview-style (technical or
       }
     );
 
-    // ✅ Handle Gemini response safely
     const textResponse =
       response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 

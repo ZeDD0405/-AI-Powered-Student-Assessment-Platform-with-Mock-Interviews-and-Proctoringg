@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -10,11 +10,18 @@ const MockSession = () => {
   const { role, experience, company, selectedTopic, difficulty, mode, interviewData } =
     location.state || {};
 
-  const [messages, setMessages] = useState([
-    { sender: "ai", text: interviewData?.response || "Welcome to your mock interview!" },
-  ]);
+  // 🟢 Use the actual Gemini-generated question from backend
+  const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (interviewData?.question) {
+      setMessages([{ sender: "ai", text: interviewData.question }]);
+    } else {
+      setMessages([{ sender: "ai", text: "Welcome to your mock interview!" }]);
+    }
+  }, [interviewData]);
 
   const handleSend = async () => {
     if (!userInput.trim()) return;
