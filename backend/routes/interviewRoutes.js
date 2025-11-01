@@ -1,8 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { startMockInterview } = require("../controllers/interviewController");
+const {
+  startMockInterview,
+  handleInterviewResponse,
+} = require("../controllers/interviewController");
 
-// Route to start the mock interview
+// ---------------- Start Interview ----------------
 router.post("/start", startMockInterview);
+
+// ---------------- Handle Response (Next Question) ----------------
+router.post("/respond", handleInterviewResponse);
 
 module.exports = router;

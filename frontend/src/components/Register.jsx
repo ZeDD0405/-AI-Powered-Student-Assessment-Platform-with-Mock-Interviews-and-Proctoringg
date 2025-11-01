@@ -9,6 +9,7 @@ const Register = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
+        setSuccess("");
 
         if (password !== confirmPassword) {
             setError("Passwords do not match!");
@@ -25,7 +27,7 @@ const Register = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:3001/register', {
+            const response = await axios.post('http://localhost:5000/api/auth/register', {
                 rollNo,
                 name,
                 password,
@@ -33,8 +35,8 @@ const Register = () => {
             });
 
             if (response.data.message === "Registration successful") {
-                alert("Registered successfully! Please login.");
-                navigate('/login');
+                setSuccess("Registered successfully! Redirecting to login...");
+                setTimeout(() => navigate('/login'), 2000);
             }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.error) {
@@ -66,6 +68,7 @@ const Register = () => {
                 <h2 className='mb-4 text-primary fw-bold'>Register</h2>
 
                 {error && <div className="alert alert-danger">{error}</div>}
+                {success && <div className="alert alert-success">{success}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3 text-start">
