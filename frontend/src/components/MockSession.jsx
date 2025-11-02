@@ -10,10 +10,10 @@ const MockSession = () => {
   const { role, experience, company, selectedTopic, difficulty, mode, interviewData } =
     location.state || {};
 
-  // 🟢 Use the actual Gemini-generated question from backend
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [ending, setEnding] = useState(false);
 
   useEffect(() => {
     if (interviewData?.question) {
@@ -55,6 +55,24 @@ const MockSession = () => {
     }
   };
 
+  const handleEndInterview = async () => {
+    try {
+      setEnding(true);
+      const res = await axios.post("http://localhost:5000/api/interview/summary", {
+        messages,
+        role,
+        company,
+      });
+
+      navigate("/interview-summary", { state: { summary: res.data.summary } });
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      alert("Failed to generate summary. Please try again.");
+    } finally {
+      setEnding(false);
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -68,8 +86,7 @@ const MockSession = () => {
         <div className="session-header">
           <h3>Mock Interview Session</h3>
           <p>
-            Role: <b>{role}</b> | Topic: <b>{selectedTopic}</b> | Mode:{" "}
-            <b>{mode}</b>
+            Role: <b>{role}</b> | Topic: <b>{selectedTopic}</b> | Mode: <b>{mode}</b>
           </p>
         </div>
 
@@ -105,8 +122,12 @@ const MockSession = () => {
         </div>
 
         <div className="footer-btns">
-          <button className="btn btn-outline-danger" onClick={() => navigate("/")}>
-            End Interview
+          <button
+            className="btn btn-outline-danger"
+            onClick={handleEndInterview}
+            disabled={ending}
+          >
+            {ending ? "Generating Summary..." : "End Interview"}
           </button>
         </div>
       </div>
