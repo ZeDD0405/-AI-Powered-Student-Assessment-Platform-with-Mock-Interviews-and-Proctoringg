@@ -1,8 +1,8 @@
-const { generateInterviewQuestions } = require("../services/geminiService");
 const axios = require("axios");
+const { generateInterviewQuestions } = require("../services/geminiService");
 
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
 // ---------------- Start the Interview ----------------
 const startMockInterview = async (req, res) => {
@@ -80,7 +80,7 @@ then ask the NEXT question in this mock interview.
   }
 };
 
-// ---------------- Generate Interview Summary ----------------
+// ---------------- Generate Interview Summary (Final Fixed + Robust) ----------------
 const generateInterviewSummary = async (req, res) => {
   try {
     const { messages, role, company } = req.body;
@@ -95,19 +95,19 @@ const generateInterviewSummary = async (req, res) => {
 
     const summaryPrompt = `
 You are an AI Interview Evaluator.
-Below is the full transcript of a mock interview for the role of ${role} at ${company}.
+Below is the transcript of a mock interview for the ${role} position at ${company}.
 
 Interview Transcript:
 ${transcript}
 
-Now provide feedback strictly in this JSON format:
+Generate a JSON response exactly in this format (no markdown, no extra text):
 
 {
-  "confidence": "Candidate’s confidence level with reasoning",
-  "nervousness": "Candidate’s nervousness level with reasoning",
-  "weakAreas": "List of weak technical or behavioral areas",
-  "strongAreas": "List of strong areas noticed",
-  "videos": ["https://youtube.com/...","https://youtube.com/..."]
+  "confidence": "A numeric percentage or short phrase",
+  "nervousness": "A numeric percentage or short phrase",
+  "weakAreas": ["Short bullet points of weaknesses"],
+  "strongAreas": ["Short bullet points of strengths"],
+  "videos": ["Only YouTube links relevant to their weak areas"]
 }
 `;
 
@@ -121,27 +121,70 @@ Now provide feedback strictly in this JSON format:
       { headers: { "Content-Type": "application/json" } }
     );
 
-    const summaryText =
-      response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
-      "{}";
+    let summaryText =
+      response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "{}";
 
-    console.log("✅ Gemini summary received, parsing JSON...");
+    console.log("📜 Raw Gemini Output:\n", summaryText);
 
-    let parsedSummary;
+    // Remove markdown and junk
+    summaryText = summaryText
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .replace(/[\u0000-\u001F]+/g, "")
+      .trim();
+
+    // If it contains JSON inside a string, extract it
+    const innerJsonMatch = summaryText.match(/\{[\s\S]*\}/);
+    if (innerJsonMatch) summaryText = innerJsonMatch[0];
+
+    let summary;
     try {
-      parsedSummary = JSON.parse(summaryText);
+      summary = JSON.parse(summaryText);
     } catch (err) {
-      console.warn("⚠️ Summary not in valid JSON. Returning raw text.");
-      parsedSummary = {
-        confidence: "Unable to parse.",
-        nervousness: "Unable to parse.",
-        weakAreas: summaryText,
-        strongAreas: "",
-        videos: [],
-      };
+      console.warn("⚠️ JSON parse failed — attempting recovery...");
+      try {
+        // Try double parsing if wrapped JSON is a string
+        const parsedOnce = JSON.parse(summaryText);
+        if (typeof parsedOnce === "string") {
+          summary = JSON.parse(parsedOnce);
+        } else {
+          summary = parsedOnce;
+        }
+      } catch (e) {
+        console.error("❌ Still failed to parse Gemini summary.");
+        console.log("Raw:", summaryText);
+        summary = {
+          confidence: "Unable to parse.",
+          nervousness: "Unable to parse.",
+          weakAreas: ["Unable to parse AI feedback."],
+          strongAreas: [],
+          videos: [],
+        };
+      }
     }
 
-    res.status(200).json({ success: true, summary: parsedSummary });
+    // Ensure proper structure
+    summary = {
+      confidence: summary.confidence || "Not specified",
+      nervousness: summary.nervousness || "Not specified",
+      weakAreas: Array.isArray(summary.weakAreas)
+        ? summary.weakAreas
+        : typeof summary.weakAreas === "string"
+        ? [summary.weakAreas]
+        : ["None identified."],
+      strongAreas: Array.isArray(summary.strongAreas)
+        ? summary.strongAreas
+        : typeof summary.strongAreas === "string"
+        ? [summary.strongAreas]
+        : ["None identified."],
+      videos: Array.isArray(summary.videos)
+        ? summary.videos
+        : typeof summary.videos === "string"
+        ? [summary.videos]
+        : [],
+    };
+
+    res.status(200).json({ success: true, summary });
   } catch (error) {
     console.error("❌ Error generating interview summary:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to generate interview summary." });

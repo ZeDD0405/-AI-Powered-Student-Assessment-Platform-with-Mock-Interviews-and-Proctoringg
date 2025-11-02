@@ -1,67 +1,101 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./InterviewSummary.css";
 
 const InterviewSummary = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const summary = location.state?.summary;
+  const { summary } = location.state || {};
 
-  if (!summary) {
-    return (
-      <div className="summary-container">
-        <h2>No summary available.</h2>
-        <button className="btn btn-dark mt-3" onClick={() => navigate("/")}>
-          Go Back
-        </button>
-      </div>
-    );
-  }
+  const [parsedSummary, setParsedSummary] = useState({
+    confidence: "N/A",
+    nervousness: "N/A",
+    weakAreas: [],
+    strongAreas: [],
+    videos: [],
+  });
+
+  useEffect(() => {
+    if (summary) {
+      try {
+        // Try to extract JSON block if it's wrapped in triple backticks
+        let cleanSummary = summary.weakAreas;
+
+        if (typeof cleanSummary === "string" && cleanSummary.includes("```json")) {
+          const jsonMatch = cleanSummary.match(/```json([\s\S]*?)```/);
+          if (jsonMatch && jsonMatch[1]) {
+            const parsed = JSON.parse(jsonMatch[1].trim());
+            setParsedSummary(parsed);
+            return;
+          }
+        }
+
+        // Fallback: if it's already a JSON object
+        if (typeof summary.weakAreas === "object") {
+          setParsedSummary(summary.weakAreas);
+        }
+      } catch (err) {
+        console.error("Error parsing summary JSON:", err);
+      }
+    }
+  }, [summary]);
 
   return (
     <div className="summary-container">
-      <div className="summary-card">
-        <h2 className="text-center mb-4 fw-bold">Interview Summary</h2>
+      <h2 className="summary-heading">Interview Summary</h2>
 
-        <div className="summary-section">
-          <h5>Confidence:</h5>
-          <p>{summary.confidence}</p>
-        </div>
+      <div className="summary-section">
+        <h3>Confidence</h3>
+        <p>{parsedSummary.confidence || summary.confidence}</p>
+      </div>
 
-        <div className="summary-section">
-          <h5>Nervousness:</h5>
-          <p>{summary.nervousness}</p>
-        </div>
+      <div className="summary-section">
+        <h3>Nervousness</h3>
+        <p>{parsedSummary.nervousness || summary.nervousness}</p>
+      </div>
 
-        <div className="summary-section">
-          <h5>Weak Areas:</h5>
-          <p>{summary.weakAreas}</p>
-        </div>
-
-        <div className="summary-section">
-          <h5>Strong Areas:</h5>
-          <p>{summary.strongAreas}</p>
-        </div>
-
-        <div className="summary-section">
-          <h5>YouTube Videos Recommended:</h5>
+      <div className="summary-section">
+        <h3>Weak Areas</h3>
+        {parsedSummary.weakAreas?.length ? (
           <ul>
-            {summary.videos?.map((video, index) => (
-              <li key={index}>
-                <a href={video} target="_blank" rel="noopener noreferrer">
-                  {video}
-                </a>
-              </li>
+            {parsedSummary.weakAreas.map((area, index) => (
+              <li key={index}>{area}</li>
             ))}
           </ul>
-        </div>
-
-        <div className="text-center mt-4">
-          <button className="btn btn-dark" onClick={() => navigate("/")}>
-            Back to Home
-          </button>
-        </div>
+        ) : (
+          <p>None identified.</p>
+        )}
       </div>
+
+      <div className="summary-section">
+        <h3>Strong Areas</h3>
+        {parsedSummary.strongAreas?.length ? (
+          <ul>
+            {parsedSummary.strongAreas.map((area, index) => (
+              <li key={index}>{area}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>None identified.</p>
+        )}
+      </div>
+
+      <div className="summary-section">
+        <h3>YouTube Recommendations</h3>
+        {parsedSummary.videos?.length ? (
+          parsedSummary.videos.map((url, index) => (
+            <a key={index} href={url} target="_blank" rel="noopener noreferrer">
+              Watch Video {index + 1}
+            </a>
+          ))
+        ) : (
+          <p>No links available.</p>
+        )}
+      </div>
+
+      <button className="dashboard-btn" onClick={() => navigate("/student-dashboard")}>
+        Go to Dashboard
+      </button>
     </div>
   );
 };
