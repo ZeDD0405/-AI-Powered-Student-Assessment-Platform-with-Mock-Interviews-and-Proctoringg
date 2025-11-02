@@ -38,7 +38,7 @@ const MockInterviewDashboard = () => {
     } else {
       setStudentName(name);
 
-      // Sample interviews for carousel
+      // ✅ Sample interviews
       setInterviews([
         {
           id: 1,
@@ -67,24 +67,6 @@ const MockInterviewDashboard = () => {
           strongAreas: ["CSS", "HTML"],
           focusAreas: ["Frontend"],
         },
-        {
-          id: 4,
-          date: "2025-10-05",
-          confidence: "Low",
-          nervousness: "High",
-          weakAreas: ["Algorithms"],
-          strongAreas: ["Data Analysis"],
-          focusAreas: ["Problem Solving"],
-        },
-        {
-          id: 5,
-          date: "2025-10-01",
-          confidence: "Medium",
-          nervousness: "Medium",
-          weakAreas: ["Time Management"],
-          strongAreas: ["Communication"],
-          focusAreas: ["Behavioral"],
-        },
       ]);
     }
   }, [navigate]);
@@ -101,14 +83,18 @@ const MockInterviewDashboard = () => {
     datasets: [
       {
         label: "Confidence",
-        data: interviews.map((i) => (i.confidence === "High" ? 3 : i.confidence === "Medium" ? 2 : 1)),
+        data: interviews.map((i) =>
+          i.confidence === "High" ? 3 : i.confidence === "Medium" ? 2 : 1
+        ),
         borderColor: "#00d5ff",
         backgroundColor: "rgba(0, 213, 255, 0.2)",
         tension: 0.3,
       },
       {
         label: "Nervousness",
-        data: interviews.map((i) => (i.nervousness === "Low" ? 1 : i.nervousness === "Medium" ? 2 : 3)),
+        data: interviews.map((i) =>
+          i.nervousness === "Low" ? 1 : i.nervousness === "Medium" ? 2 : 3
+        ),
         borderColor: "#ff4d6d",
         backgroundColor: "rgba(255, 77, 109, 0.2)",
         tension: 0.3,
@@ -128,13 +114,14 @@ const MockInterviewDashboard = () => {
         max: 3,
         ticks: {
           stepSize: 1,
-          callback: (val) => (val === 1 ? "Low" : val === 2 ? "Medium" : "High"),
+          callback: (val) =>
+            val === 1 ? "Low" : val === 2 ? "Medium" : "High",
         },
       },
     },
   };
 
-  // Function to split array into chunks for carousel slides
+  // Split interviews into carousel slides
   const chunkArray = (arr, chunkSize) => {
     const chunks = [];
     for (let i = 0; i < arr.length; i += chunkSize) {
@@ -143,7 +130,6 @@ const MockInterviewDashboard = () => {
     return chunks;
   };
 
-  // Determine chunk size based on screen width
   const [chunkSize, setChunkSize] = useState(3);
   useEffect(() => {
     const handleResize = () => {
@@ -162,10 +148,23 @@ const MockInterviewDashboard = () => {
     <div className="mock-dashboard-wrapper">
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
-        <h3 className="navbar-brand fw-bold mb-0">Mock Interview Dashboard</h3>
-        <div className="ms-auto d-flex align-items-center">
-          <span className="me-3 fw-semibold">Hi, {studentName || "Student"}</span>
-          <button onClick={handleLogout} className="btn btn-outline-light btn-sm">
+        <h3 className="navbar-brand fw-bold mb-0">
+          Mock Interview Dashboard
+        </h3>
+        <div className="ms-auto d-flex align-items-center gap-3">
+          <button
+            onClick={() => navigate("/home")}
+            className="btn btn-light btn-sm fw-semibold"
+          >
+            🏠 Home
+          </button>
+          <span className="fw-semibold text-white">
+            Hi, {studentName || "Student"}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="btn btn-outline-light btn-sm"
+          >
             Logout
           </button>
         </div>
@@ -184,33 +183,89 @@ const MockInterviewDashboard = () => {
 
         {/* Carousel */}
         {interviews.length > 0 ? (
-          <div id="interviewCarousel" className="carousel slide mb-4" data-bs-ride="carousel">
+          <div
+            id="interviewCarousel"
+            className="carousel slide mb-4"
+            data-bs-ride="carousel"
+          >
             <div className="carousel-inner">
               {slides.map((slide, idx) => (
-                <div className={`carousel-item ${idx === 0 ? "active" : ""}`} key={idx}>
+                <div
+                  className={`carousel-item ${idx === 0 ? "active" : ""}`}
+                  key={idx}
+                >
                   <div className="d-flex justify-content-center gap-3 flex-wrap">
                     {slide.map((interview) => (
-                      <div key={interview.id} className="card shadow-sm p-4 hover-card" style={{ width: "18rem" }}>
-                        <h5 className="fw-bold mb-3">{interview.date}</h5>
-                        <div className="mb-2">
-                          <span className="badge bg-success me-2">Confidence: {interview.confidence}</span>
-                          <span className="badge bg-warning">Nervousness: {interview.nervousness}</span>
+                      <div
+                        key={interview.id}
+                        className="card shadow-sm hover-card"
+                      >
+                        <div className="card-content">
+                          <h5 className="fw-bold mb-3">{interview.date}</h5>
+                          <div className="mb-2">
+                            <span className="badge bg-success me-2">
+                              Confidence: {interview.confidence}
+                            </span>
+                            <span className="badge bg-warning">
+                              Nervousness: {interview.nervousness}
+                            </span>
+                          </div>
+                          <p>
+                            <strong>Weak Areas:</strong>{" "}
+                            {interview.weakAreas.join(", ")}
+                          </p>
+                          <p>
+                            <strong>Strong Areas:</strong>{" "}
+                            {interview.strongAreas.join(", ")}
+                          </p>
+                          <p>
+                            <strong>Focus Areas:</strong>{" "}
+                            {interview.focusAreas.join(", ")}
+                          </p>
                         </div>
-                        <p><strong>Weak Areas:</strong> {interview.weakAreas.join(", ")}</p>
-                        <p><strong>Strong Areas:</strong> {interview.strongAreas.join(", ")}</p>
-                        <p><strong>Focus Areas:</strong> {interview.focusAreas.join(", ")}</p>
+
+                        <div className="card-footer text-center fixed-footer">
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() =>
+                              navigate("/interview-summary", {
+                                state: { summary: interview },
+                              })
+                            }
+                          >
+                            View Summary
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
-            <button className="carousel-control-prev" type="button" data-bs-target="#interviewCarousel" data-bs-slide="prev">
-              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+
+            {/* Carousel Controls */}
+            <button
+              className="carousel-control-prev"
+              type="button"
+              data-bs-target="#interviewCarousel"
+              data-bs-slide="prev"
+            >
+              <span
+                className="carousel-control-prev-icon"
+                aria-hidden="true"
+              ></span>
               <span className="visually-hidden">Previous</span>
             </button>
-            <button className="carousel-control-next" type="button" data-bs-target="#interviewCarousel" data-bs-slide="next">
-              <span className="carousel-control-next-icon" aria-hidden="true"></span>
+            <button
+              className="carousel-control-next"
+              type="button"
+              data-bs-target="#interviewCarousel"
+              data-bs-slide="next"
+            >
+              <span
+                className="carousel-control-next-icon"
+                aria-hidden="true"
+              ></span>
               <span className="visually-hidden">Next</span>
             </button>
           </div>
